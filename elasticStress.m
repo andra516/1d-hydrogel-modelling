@@ -1,3 +1,3 @@
-function sigmaP = elasticStress(temp, phi)
-sigmaP = temp./(1-phi);
+function sigmaP = elasticStress(phi, temp, params)
+sigmaP = (temp./params.T0)./(1-phi);
 end
