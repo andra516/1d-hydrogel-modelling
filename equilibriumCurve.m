@@ -1,35 +1,54 @@
-params.Omega = 720;
-params.A = -62.22;
-params.B = 0.20470;
-params.T0 = 315;
-params.chi = @(T) params.A + params.B .* T;
+% Plots the equilibrium curve for uniform temperature distribution.
 
+%% Calculates the eqm temperature for a range of different lambdas
+% Load in gel parameters
+load params.mat
+
+% Plot N data points
 N = 1000;
+% Initialise temperature array:
 Ts = zeros(1,N);
+
+% n is an index counter for broadcasting to Ts
 n = 1;
-f = @(x, T) x/params.Omega + 1./x + log(1-1./x) + params.chi(T)./(x^2); % at eqm, this = 0
-lambdas = linspace(1.001, 2.55^3, N); % trials lots of different stretches, rather than temps
+
+% Trial many different lambdas in reasonable range:
+lambdas = linspace(1.001, 2.55^3, N);
+
 for lambda = lambdas
-    x = lambda; % sets x equal to the given lambda
-    fun = @(T) f(x, T); % new function is just a fn of temp
-    Ts(n) = fzero(fun, 310); % finds the temperature at which fun = 0
+    % Calculate the corresponding porosity:
+    phi = 1 - 1./lambda;
+    
+    % equilibriumT finds the temperature at which the eqm condition
+    % function = 0
+    eqmT = equilibriumT(phi, params);
+    Ts(n) = eqmT;
+    
+    % Increment the indexing counter
     n = n+1;
 end
 
+%% Plotting 
 col = parula(3);
 
 plot(Ts, lambdas, 'color', col(2,:), 'LineWidth', 2);
-txta = texlabel(strcat('a = ', string(params.A)));
-txtb = texlabel(strcat('b = ', string(params.B)));
+
+% Add parameter labels:
+txta = texlabel(strcat('a = ', string(params.a)));
+txtb = texlabel(strcat('b = ', string(params.b)));
 txtOmega = texlabel(strcat('Omega = ', string(params.Omega)));
 text(315, 9, txta);
 text(315, 8, txtb);
 text(315, 7, txtOmega);
+
 % xlim([300, 315]);
 % ylim([0.75, lambdas(end)]);
+
+% Add axes labels:
 xlabel('T_0 (K)', 'fontSize', 15);
 ylabel('\lambda_{eq}', 'fontSize', 15);
 
-params.lambdas = lambdas;
-params.Ts = Ts;
-% save('eqmCurveUniformT.mat', '-struct', 'params');
+%% Saving data
+% params.lambdas = lambdas;
+% params.Ts = Ts;
+% save('eqmCurveUniformT.mat', 'params');
