@@ -1,21 +1,11 @@
-%% Swelling simulation - going from a low porosity (e.g. phi = 0.1) to a
-%% high porosity, by changing the temperature of the gel instantaneously...
+%% Swelling simulation - going from a low porosity (e.g. phi = 0.1) to a high porosity, by changing the temperature of the gel instantaneously 
 
-
-%% Load in and initialise parameters
+%% Load in gel parameters and initialise parameters
 load params.mat
 params.phi0 = 0.1; % starting porosity
 
-params.k = 1; % dimensionless permeability
-params.Omega = 720; % Ratio of strand to solvent volumes
-params.a = -62.22;
-params.b = 0.20470;
-params.phi0 = 0.1; % starting porosity
-params.chi = @(T) params.a + params.b .* T; % chi parameter has linear temp dependence
-% T is measured in Kelvin.
-
 %% Initialise porosity, temperature and position arrays:
-Nzs = 10^2; % Number of points to sample phi and temperature at
+Nzs = 50; % Number of points to sample phi and temperature at
 z = linspace(0, 1, Nzs).'; % z array of positions between 0 and 1
 dz = 1/(Nzs-1); % spatial step
 
@@ -26,7 +16,7 @@ params.T0 = equilibriumT(params.phi0, params);
 
 % Temperature is switched at t = 0 to new temperature, T1
 params.T1 = 305;
-temp = ones(Nzs, 1) .* T1;
+temp = ones(Nzs, 1) .* params.T1;
 
 % Initialise length of gel:
 h = 1; % by definition
@@ -40,10 +30,10 @@ tTotRange = [0 1];
 % Total time is split into Nts steps:
 Nts = 4*10^7;
 % Time step:
-dt = (tRange(end)-tRange(1))/(Nts-1);
+dt = (tTotRange(end)-tTotRange(1))/(Nts-1);
 
 % Simulation can be run for just nSteps out of Nts steps:
-nSteps = 10^3;
+nSteps = 10^5;
 
 
 %% Set up phi, temp and h measurements:
@@ -67,6 +57,10 @@ tempMeasurements(:, 1) = params.T1;
 
 hMeasurements = zeros(1, numMeasurements);
 hMeasurements(1) = h;
+
+% Will store the time that each measurement is made:
+timeMeasurements = zeros(1, numMeasurements);
+timeMeasurements(1) = 0;
 
 %% Apply boundary condition at RHS of gel:
 phi(end) = boundaryPhi(params, temp(end));
@@ -105,7 +99,16 @@ for step = 2:(nSteps+1)
         phiMeasurements(:, step) = phi;
         tempMeasurements(:, step) = temp;
         hMeasurements(step) = h;
+        timeMeasurements(step) = (step-1) * dt;
     end 
 
 end
 
+%% Saving results
+params.phiMeasurements = phiMeasurements;
+params.tempMeasurements = tempMeasurements;
+params.hMeasurements = hMeasurements;
+params.timeMeasurements = timeMeasurements;
+params.positionArray = z.*hMeasurements;
+
+save('pSwellingSimMeasurements.mat', 'params');
