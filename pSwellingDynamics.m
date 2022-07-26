@@ -1,72 +1,111 @@
-%%%% Situation where we go from eqm porosity phi = 0.04 (T~315K) and decrease
-%%%% temperature to 305 K
+%% Swelling simulation - going from a low porosity (e.g. phi = 0.1) to a
+%% high porosity, by changing the temperature of the gel instantaneously...
 
-% Initialise parameters
+
+%% Load in and initialise parameters
+load params.mat
+params.phi0 = 0.1; % starting porosity
+
 params.k = 1; % dimensionless permeability
 params.Omega = 720; % Ratio of strand to solvent volumes
 params.a = -62.22;
 params.b = 0.20470;
 params.phi0 = 0.1; % starting porosity
-params.chi = @(T) params.a + params.b .* T; % chi parameter is a linear function temperature
+params.chi = @(T) params.a + params.b .* T; % chi parameter has linear temp dependence
+% T is measured in Kelvin.
 
-%%%% Initialise porosity, temperature and position arrays
+%% Initialise porosity, temperature and position arrays:
 Nzs = 10^2; % Number of points to sample phi and temperature at
 z = linspace(0, 1, Nzs).'; % z array of positions between 0 and 1
 dz = 1/(Nzs-1); % spatial step
 
-tRange = [0 1]; % time range simulation goes over
-Nts = 4*10^7; % Number of time steps t = j/Nts
-dt = (tRange(end)-tRange(1))/(Nts-1); % time step
+phi = ones(Nzs, 1).*params.phi0;
 
-phi = ones(Nzs,1)*params.phi0;
-% Starting eqm porosity is 0.05 - the temperature at this porosity:
-f = @(x, T) params.chi(T) + x.^2 *(x/params.Omega + 1./x + log(1-1./x));
-x = 1/(1-params.phi0);
-fun = @(T) f(x, T);
-params.T0 = fzero(fun, 310, optimset('Display', 'off'));
+% Calculate the initial eqm temperature for the given initial phi
+params.T0 = equilibriumT(params.phi0, params);
 
-% Temperature is then changed to T = 305 K
-T1 = 305;
-temp = ones(Nzs, 1) * T1;
+% Temperature is switched at t = 0 to new temperature, T1
+params.T1 = 305;
+temp = ones(Nzs, 1) .* T1;
 
-% Initial length of the gel is, by definition = 1 (in dimensionless units)
-h = 1;
-nSteps = 10^6;
-hArray = zeros(nSteps, 1);
-hArray(1) = h;
+% Initialise length of gel:
+h = 1; % by definition
+
+%% Initialise total time array simulation time arrays.
+% The simulation can run for time defined in tTotRange, but we can run the
+% simulation for a fraction of this, specified by nSteps.
+
+% Total time the solver can run for:
+tTotRange = [0 1];
+% Total time is split into Nts steps:
+Nts = 4*10^7;
+% Time step:
+dt = (tRange(end)-tRange(1))/(Nts-1);
+
+% Simulation can be run for just nSteps out of Nts steps:
+nSteps = 10^3;
+
+
+%% Set up phi, temp and h measurements:
+% We want to record phi, h and T numMeasurements times:
+numMeasurements = 10^2;
+
+% Determine the recording frequency:
+if nSteps > numMeasurements
+    % If there's more steps than number of measurements required:
+    recordFreq = nSteps/numMeasurements;
+else
+    % If there are less steps than number of measurements required:
+    recordFreq = 10;
+end
+
+phiMeasurements = zeros(Nzs, numMeasurements);
+phiMeasurements(:,1) = params.phi0;
+
+tempMeasurements = zeros(Nzs, numMeasurements);
+tempMeasurements(:, 1) = params.T1;
+
+hMeasurements = zeros(1, numMeasurements);
+hMeasurements(1) = h;
+
+%% Apply boundary condition at RHS of gel:
 phi(end) = boundaryPhi(params, temp(end));
+% Ammend phi measurements array:
+phiMeasurements(:, 1) = phi;
 
-for step = 2:(nSteps+1)    
+%% Perform simulation:
+% This loop performs nSteps steps. step can be used as an indexing counter
+for step = 2:(nSteps+1)
+    %% Calculate stresses and gradient in chem pot:
     % Calculate the effective stress and osmotic pressure in the bulk:
     sigmaP = elasticStress(phi, temp, params);
     Pi = osmoticPressure(phi, temp, params);
 
-    % Check stress balance at ends:
-    % if abs(sigmaP(end) - Pi(end)) > 0.1
-    %     string('HELP')
-    % end
-    
     % Calculate gradient in chemical potential 
     gradMu = firstDerivative(sigmaP, 2) - firstDerivative(Pi, 2);
-    % NO FLUX THROUGH LEFT BOUNDARY:
+    % Apply no flux BC at LHS:
     gradMu(1) = 0;
-
+    
+    %% Calculate Rates:
     % Calculate the rate at which the length is changing
     hRate = params.k ./ h .* gradMu(end);
-
+    
+    % Calculate the rate of change with time in the porosity:
     dfdt = hRate./h .* z .* firstDerivative(phi, 2) + 1/(h^2) .* firstDerivative((params.k .* (1-phi) .* gradMu),2);
     
+    %% Forward-Euler the length and porosity arrays:
     h = h + hRate .* dt;
     phi = phi + dfdt .* dt;
-
-%     phi(phi>1) = 0.999;
-    hArray(step) = h;
-    % the porosity of the gel at the free boundary is determined by the phi 
-    % that solves elasticStress = osmoticPressure at temp of the boundary
+    
+    %% Apply stress balance BC at the RHS:
     phi(end) = boundaryPhi(params, temp(end));
+    
+    %% Recording phi, temp, h:
+    if mod(nSteps, recordFreq) == 0
+        phiMeasurements(:, step) = phi;
+        tempMeasurements(:, step) = temp;
+        hMeasurements(step) = h;
+    end 
+
 end
 
-hArray
-figure(1);
-plot((1:(nSteps+1)).*dt, hArray);
-ylim([0, 2])
