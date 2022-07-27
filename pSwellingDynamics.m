@@ -2,10 +2,10 @@
 
 %% Load in gel parameters and initialise parameters
 load params.mat
-params.phi0 = 0.1; % starting porosity
+params.phi0 = 0.2; % starting porosity
 
 %% Initialise porosity, temperature and position arrays:
-Nzs = 50; % Number of points to sample phi and temperature at
+Nzs = 100; % Number of points to sample phi and temperature at
 z = linspace(0, 1, Nzs).'; % z array of positions between 0 and 1
 dz = 1/(Nzs-1); % spatial step
 
@@ -19,7 +19,8 @@ params.T1 = 305;
 temp = ones(Nzs, 1) .* params.T1;
 
 % Initialise length of gel:
-h = 1; % by definition
+lambda0 = 1/(1-params.phi0); % intial stretch
+h = 1*lambda0; % by definition, dry length is 1
 
 %% Initialise total time array simulation time arrays.
 % The simulation can run for time defined in tTotRange, but we can run the
@@ -28,27 +29,19 @@ h = 1; % by definition
 % Total time the solver can run for:
 tTotRange = [0 1];
 % Total time is split into Nts steps:
-Nts = 4*10^7;
+Nts = 5*1e7;
 % Time step:
 dt = (tTotRange(end)-tTotRange(1))/(Nts-1);
 
 % Simulation can be run for just nSteps out of Nts steps:
-nSteps = 10^5;
-
+nSteps = Nts;
 
 %% Set up phi, temp and h measurements:
 % We want to record phi, h and T numMeasurements times:
-numMeasurements = 10^2;
-
-% Determine the recording frequency:
-if nSteps > numMeasurements
-    % If there's more steps than number of measurements required:
-    recordFreq = nSteps/numMeasurements;
-else
-    % If there are less steps than number of measurements required:
-    recordFreq = 10;
-end
-
+numMeasurements = 1000;
+% Recording frequency:
+recordFreq = nSteps/numMeasurements;
+% Initialise measurement arrays:
 phiMeasurements = zeros(Nzs, numMeasurements);
 phiMeasurements(:,1) = params.phi0;
 
@@ -95,11 +88,12 @@ for step = 2:(nSteps+1)
     phi(end) = boundaryPhi(params, temp(end));
     
     %% Recording phi, temp, h:
-    if mod(nSteps, recordFreq) == 0
-        phiMeasurements(:, step) = phi;
-        tempMeasurements(:, step) = temp;
-        hMeasurements(step) = h;
-        timeMeasurements(step) = (step-1) * dt;
+    if mod(step, recordFreq) == 0
+        recordIndex = step/recordFreq;
+        phiMeasurements(:, recordIndex) = phi;
+        tempMeasurements(:, recordIndex) = temp;
+        hMeasurements(recordIndex) = h;
+        timeMeasurements(recordIndex) = (step-1) * dt;
     end 
 
 end
@@ -111,4 +105,4 @@ params.hMeasurements = hMeasurements;
 params.timeMeasurements = timeMeasurements;
 params.positionArray = z.*hMeasurements;
 
-save('pSwellingSimMeasurements.mat', 'params');
+save('FULLpSwellingSim.mat', 'params');
