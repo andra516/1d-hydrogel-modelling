@@ -1,13 +1,10 @@
-function plottingSwellingDynamics(matfile)
+function plottingSwellingDynamics(runParams)
 
-
-load matfile
-
-t = params.timeMeasurements;
-phi = params.phiMeasurements;
-temp = params.tempMeasurements;
-h = params.hMeasurements;
-x = params.xMeasurements;
+t = runParams.timeMeasurements;
+phi = runParams.phiMeasurements;
+temp = runParams.tempMeasurements;
+h = runParams.hMeasurements;
+x = runParams.xMeasurements;
 
 figure(1);
 
