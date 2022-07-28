@@ -13,7 +13,7 @@ function uniformTempDynamics(phi0, T1, Nzs, timeRange, dt, recordFreqt, params, 
 
 %% Initialise porosity, temperature and position arrays:
 z = linspace(0, 1, Nzs).'; % z array of positions between 0 and 1
-% dz = 1/(Nzs-1); % spatial step
+dz = 1/(Nzs-1); % spatial step
 
 params.phi0 = phi0; % starting porosity
 phi = ones(Nzs, 1).*params.phi0;
@@ -106,6 +106,8 @@ params.tempMeasurements = tempMeasurements;
 params.hMeasurements = hMeasurements;
 params.timeMeasurements = timeMeasurements;
 params.xMeasurements = z.*hMeasurements;
+params.dz = dz;
+params.dt = dt;
 
 if ~strcmp(saveFileName,'noSave') % if not 'noSave'
     fname = strcat(saveFileName, '.mat');
