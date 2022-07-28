@@ -90,10 +90,10 @@ for step = 2:(nSteps+1)
     %% Recording phi, temp, h:
     if mod(step, recordFreq) == 0
         recordIndex = step/recordFreq;
-        phiMeasurements(:, recordIndex) = phi;
-        tempMeasurements(:, recordIndex) = temp;
-        hMeasurements(recordIndex) = h;
-        timeMeasurements(recordIndex) = (step-1) * dt;
+        phiMeasurements(:, recordIndex+1) = phi;
+        tempMeasurements(:, recordIndex+1) = temp;
+        hMeasurements(recordIndex+1) = h;
+        timeMeasurements(recordIndex+1) = (step-1) * dt;
     end 
 
 end
@@ -104,5 +104,21 @@ params.tempMeasurements = tempMeasurements;
 params.hMeasurements = hMeasurements;
 params.timeMeasurements = timeMeasurements;
 params.positionArray = z.*hMeasurements;
+% 
+% save('FULLpSwellingSim.mat', 'params');
 
-save('FULLpSwellingSim.mat', 'params');
+%% Plotting 
+t = params.timeMeasurements;
+phi = params.phiMeasurements;
+temp = params.tempMeasurements;
+h = params.hMeasurements;
+x = params.positionArray;
+
+figure(1);
+
+s = surf(t, x, phi, 'EdgeColor', 'none');
+cbar = colorbar;
+cbar.Label.String = 'Porosity, {\phi_f}';
+
+xlabel('Time, {t} (s)');
+ylabel('Position, {x}');
