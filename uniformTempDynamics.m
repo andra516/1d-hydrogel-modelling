@@ -56,7 +56,9 @@ timeMeasurements = zeros(1, numMeasurements+1);
 timeMeasurements(1) = 0;
 
 %% Apply boundary condition at RHS of gel:
-phi(end) = boundaryPhi(params, temp(end));
+% This is the same throughout simulation.
+phiBoundary = boundaryPhi(params, temp(end));
+phi(end) = phiBoundary;
 % Ammend phi measurements array:
 phiMeasurements(end, 1) = phi(end);
 
@@ -86,7 +88,7 @@ for step = 1:Nts
     phi = phi + dfdt .* dt;
     
     %% Apply stress balance BC at the RHS:
-    phi(end) = boundaryPhi(params, temp(end));
+    phi(end) = phiBoundary;
     
     %% Recording phi, temp, h:
     if mod(step, nFreq) == 0
