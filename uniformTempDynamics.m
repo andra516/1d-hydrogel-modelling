@@ -12,6 +12,7 @@ function uniformTempDynamics(phi0, T1, Nzs, timeRange, dt, recordFreqt, params, 
 % which case no save file is kept.
 
 %% Initialise porosity, temperature and position arrays:
+params.Nzs = Nzs;
 z = linspace(0, 1, Nzs).'; % z array of positions between 0 and 1
 dz = 1/(Nzs-1); % spatial step
 
@@ -23,7 +24,7 @@ params.T0 = equilibriumT(params.phi0, params);
 
 % Temperature is switched at t = 0 to new temperature, T1
 params.T1 = T1;
-temp = ones(Nzs, 1) .* params.T1;
+temp = params.T1;
 
 % Initialise length of gel:
 lambda0 = 1/(1-params.phi0); % intial stretch
@@ -33,6 +34,8 @@ h = 1*lambda0; % by definition, dry length is 1
 % The simulation runs for time timeRange, with time steps of width dt:
 % Total number of time steps:
 Nts = int64((timeRange(end)-timeRange(1))/dt)
+params.Nts = Nts;
+params.timeRange = timeRange;
 
 
 %% Set up phi, temp and h measurements:
@@ -45,9 +48,9 @@ nFreq = int64(recordFreqt/dt)
 phiMeasurements = zeros(Nzs, numMeasurements+1);
 phiMeasurements(:,1) = params.phi0;
 
-tempMeasurements = zeros(Nzs, numMeasurements+1);
-tempMeasurements(:, 1) = params.T1;
+% For uniform temperature change, we only need to keep track of T0 and T1.
 
+% Length measurements:
 hMeasurements = zeros(1, numMeasurements+1);
 hMeasurements(1) = h;
 
@@ -94,19 +97,18 @@ for step = 1:Nts
     if mod(step, nFreq) == 0
         recordIndex = step/nFreq + 1;
         phiMeasurements(:, recordIndex) = phi;
-        tempMeasurements(:, recordIndex) = temp;
         hMeasurements(recordIndex) = h;
         timeMeasurements(recordIndex) = t;
     end
     t = t+dt;
 end
 recordIndex
+hRate
 
 %% Saving results
 params.phiMeasurements = phiMeasurements;
 params.tempMeasurements = tempMeasurements;
 params.hMeasurements = hMeasurements;
-params.timeMeasurements = timeMeasurements;
 params.xMeasurements = z.*hMeasurements;
 params.dz = dz;
 params.dt = dt;
@@ -121,9 +123,8 @@ end
 if outputGraph 
     t = params.timeMeasurements;
     phi = params.phiMeasurements;
-%     temp = params.tempMeasurements;
-%     h = params.hMeasurements;
     x = params.xMeasurements;
+    
     figure(1);
     s = surf(t, x, phi, 'EdgeColor', 'none');
     cbar = colorbar;
