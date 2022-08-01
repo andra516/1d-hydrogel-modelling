@@ -42,7 +42,7 @@ params.timeRange = timeRange;
 % We want to record phi, h and T numMeasurements times...
 numMeasurements = int64(timeRange(end)/recordFreqt)
 % or every nFreq steps:
-nFreq = int64(recordFreqt/dt)
+nFreq = int64(recordFreqt/dt);
 % Initialise measurement arrays - include measurement at t=0, so make
 % arrays one longer than needed:
 phiMeasurements = zeros(Nzs, numMeasurements+1);
@@ -75,7 +75,7 @@ for step = 1:Nts
     Pi = osmoticPressure(phi, temp, params);
 
     % Calculate gradient in chemical potential 
-    gradMu = firstDerivative(sigmaP, 2) - firstDerivative(Pi, 2);
+    gradMu = firstDerivative(sigmaP, 3) - firstDerivative(Pi, 3);
     % Apply no flux BC at LHS:
     gradMu(1) = 0;
     
@@ -84,7 +84,7 @@ for step = 1:Nts
     hRate = params.k ./ h .* gradMu(end);
     
     % Calculate the rate of change with time in the porosity:
-    dfdt = hRate./h .* z .* firstDerivative(phi, 2) + 1/(h^2) .* firstDerivative((params.k .* (1-phi) .* gradMu),2);
+    dfdt = hRate./h .* z .* firstDerivative(phi, 3) + 1/(h^2) .* firstDerivative((params.k .* (1-phi) .* gradMu),3);
     
     %% Forward-Euler the length and porosity arrays:
     h = h + hRate .* dt;
@@ -107,9 +107,9 @@ hRate
 
 %% Saving results
 params.phiMeasurements = phiMeasurements;
-params.tempMeasurements = tempMeasurements;
 params.hMeasurements = hMeasurements;
 params.xMeasurements = z.*hMeasurements;
+params.timeMeasurements = timeMeasurements;
 params.dz = dz;
 params.dt = dt;
 
@@ -129,7 +129,7 @@ if outputGraph
     s = surf(t, x, phi, 'EdgeColor', 'none');
     cbar = colorbar;
     cbar.Label.String = 'Porosity, {\phi_f}';
-
+    title(['T_0 = ', num2str(params.T0), ', T_1 = ', num2str(params.T1), ', dt = ', num2str(params.dt), ', Nzs = ', num2str(params.Nzs)]);
     xlabel('Time, {t} (s)');
     ylabel('Position, {x}');  
 end 
