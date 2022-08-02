@@ -2,7 +2,6 @@ function plotUniformTempDynamics(runParams)
 
 t = runParams.timeMeasurements;
 phi = runParams.phiMeasurements;
-temp = runParams.tempMeasurements;
 h = runParams.hMeasurements;
 x = runParams.xMeasurements;
 T0 = runParams.T0;
