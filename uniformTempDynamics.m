@@ -75,7 +75,7 @@ for step = 1:Nts
     Pi = osmoticPressure(phi, temp, params);
 
     % Calculate gradient in chemical potential 
-    gradMu = firstDerivative(sigmaP, 3) - firstDerivative(Pi, 3);
+    gradMu = firstDerivative(sigmaP, 2) - firstDerivative(Pi, 2);
     % Apply no flux BC at LHS:
     gradMu(1) = 0;
     
@@ -84,7 +84,7 @@ for step = 1:Nts
     hRate = params.k ./ h .* gradMu(end);
     
     % Calculate the rate of change with time in the porosity:
-    dfdt = hRate./h .* z .* firstDerivative(phi, 3) + 1/(h^2) .* firstDerivative((params.k .* (1-phi) .* gradMu),3);
+    dfdt = hRate./h .* z .* firstDerivative(phi, 2) + 1/(h^2) .* firstDerivative((params.k .* (1-phi) .* gradMu), 2);
     
     %% Forward-Euler the length and porosity arrays:
     h = h + hRate .* dt;
