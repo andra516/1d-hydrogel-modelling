@@ -35,6 +35,18 @@ elseif accuracy == 3 % JUst for fwd and bkwd derivatives
     % Calculate derivative in interior using central finite diff. (2nd
     % order)
     dadz(2:end-1) = 0.5*(a(3:end) - a(1:end-2))./dz;
-end 
-
+    
+elseif accuracy == 4
+    % Calculate derivative on the left boundary using forward finite
+    % difference (second order)
+    dadz(1) = (-11/6*a(1) + 3*a(2) - 1.5*a(3) + 1/3*a(4))./dz;
+    dadz(2) = 0.5*(a(1) - a(3))./dz;
+%     dadz(2) = (-11/6*a(2) + 3*a(3) - 3/2*a(4) + 1/3*a(5))./dz;
+    % Calculate derivative on the right boundary using backward finite
+    % diff. (second order)
+    dadz(end) = (11/6*a(end) - 3*a(end-1) + 3/2*a(end-2) - 1/3*a(end-3))./dz;
+    dadz(end-1) = 0.5*(a(end-2) - a(end))./dz;
+%     dadz(end-1) = (11/6*a(end-1) - 3*a(end-2) + 3/2*a(end-3) - 1/3*a(end-4))./dz;
+    % Calculate derivative in interior using central finite diff. (4th order)
+    dadz(3:end-2) = (1/12 * a(1:end-4) - 2/3 * a(2:end-3) + 2/3 * a(4:end-1) - 1/12 * a(5:end))./dz;
 end
