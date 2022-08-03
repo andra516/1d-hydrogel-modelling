@@ -1,7 +1,8 @@
-function tempGradDynamics(phi0, T1, d, Nzs, timeRange, dt, recordFreqt, params, outputGraph, saveFileName)
+function tempGradDynamics(phi0, TL, TR, d, Nzs, timeRange, dt, recordFreqt, params, outputGraph, saveFileName)
 %% Executes a simulation run using specified parameters, 
-% phi0: initial porosity (sets the temperature at the right end of the bath
-% T1: new temperature
+% phi0: initial porosity
+% TL: temperature of the left bath at t=0
+% TR: temperature of the right bath at t=0
 % d: width of the solvent bath or distance between heat baths. Must be
 % sufficiently large so that the gel length, h doesn't exceed d.
 % Nzs: number of points to specify phi and temp at, including z=0, z=1.
@@ -28,10 +29,12 @@ h = 1*lambda0; % by definition, dry length is 1
 % Calculate the initial eqm temperature for the given initial phi
 params.T0 = equilibriumT(params.phi0, params);
 
-% Temperature at the LHS is switched at t = 0 to new temperature, T1 -
-% assume steady state temperature distribution is reached instantaneously:
-params.T1 = T1;
-tempDist =@(z,h) (params.T0 - params.T1)/d * z .* h + params.T1;
+% Temperatures of LHS and RHS's are switched at t = 0 to new temperatures,
+% TL, TR - assume steady state temperature distribution is reached
+% instantaneously:
+params.TL = TL;
+params.TR = TR;
+tempDist =@(z,h) (params.TR - params.TL)/d * z .* h + params.TL;
 params.tempDist = tempDist;
 params.d = d;
 
@@ -69,7 +72,7 @@ phi(end) = boundaryPhi(params, temp(end));
 phiMeasurements(end, 1) = phi(end);
 
 %% Print info about run:
-['T0 = ', num2str(params.T0), ', T1 = ', num2str(params.T1), ', d = ', num2str(params.d), ', Nts = ', num2str(params.Nts), ', numMeasurements = ', num2str(numMeasurements)]
+['T0 = ', num2str(params.T0), ', TL = ', num2str(params.TL), ', TR = ', num2str(params.TR), ', d = ', num2str(params.d), ', Nts = ', num2str(params.Nts), ', numMeasurements = ', num2str(numMeasurements)]
 
 %% Perform simulation:
 % This loop performs Nts steps. step can be used as an indexing counter
@@ -139,12 +142,15 @@ if outputGraph
     s = surf(t, x, phi, 'EdgeColor', 'none');
     cbar = colorbar;
     cbar.Label.String = 'Porosity, {\phi_f}';
-    title(['T_0 = ', num2str(params.T0), ', T_1 = ', num2str(params.T1), ', dt = ', num2str(params.dt), ', Nzs = ', num2str(params.Nzs)]);
+    title(['T_0 = ', num2str(params.T0), ', T_L = ', num2str(params.TL), ', T_R = ', num2str(params.TR), ', dt = ', num2str(params.dt), ', Nzs = ', num2str(params.Nzs)]);
     xlabel('Time, {t} (s)');
     ylabel('Position, {x}');
     tempAx = subplot(1,4,1);
-    plot([params.T1, params.T0], [0, params.d], 'red', 'LineWidth', 2);
+    hold on;
+    plot([params.TL, params.TR], [0, params.d], 'red', 'LineWidth', 2);
+    plot([params.T0, params.T0], [0, params.d], 'k--', 'LineWidth', 0.5);
     xlabel('Temperature, T {K}');
+    hold off; 
 end 
 
 end
