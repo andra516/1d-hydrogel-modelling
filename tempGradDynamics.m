@@ -99,6 +99,7 @@ for step = 1:Nts
     h = h + hRate .* dt;
     phi = phi + dfdt .* dt;
     
+    
     %% Calculate temperature at gridpoints in the gel at next time step
     temp = tempDist(z, h);
     
@@ -150,7 +151,7 @@ if outputGraph
     plot([params.TL, params.TR], [0, params.d], 'red', 'LineWidth', 2);
     plot([params.T0, params.T0], [0, params.d], 'k--', 'LineWidth', 0.5);
     xlabel('Temperature, T {K}');
-    hold off; 
+    hold off;
 end 
 
 end
