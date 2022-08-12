@@ -70,12 +70,11 @@ phiMeasurements(end, 1) = phi(end);
 t = dt;
 for step = 1:Nts
     %% Calculate stresses and gradient in chem pot:
-    % Calculate the effective stress and osmotic pressure in the bulk:
-    sigmaP = elasticStress(phi, temp, params);
-    Pi = osmoticPressure(phi, temp, params);
+    % Calculate the internal stress in the bulk:
+    sigma = stress(phi, temp, params);
 
     % Calculate gradient in chemical potential 
-    gradMu = firstDerivative(sigmaP, 2) - firstDerivative(Pi, 2);
+    gradMu = firstDerivative(sigma, 2);
     % Apply no flux BC at LHS:
     gradMu(1) = 0;
     
