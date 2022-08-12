@@ -91,12 +91,11 @@ xlim([300, 315]);
 ylim([0, 12]);
 
 % Add axes labels:
-xlabel('T_0 (K)', 'fontSize', 15);
+xlabel('T (K)', 'fontSize', 15);
 ylabel('\lambda_{eq}', 'fontSize', 15);
 
-
-plot(spinTs, spinlambdas)
-patch(cat(2, TsCoex, flip(TsCoex)), cat(2, lambda1, flip(lambda2)), 'red', 'FaceAlpha', 0.3)
+patch(cat(2, TsCoex, flip(TsCoex)), cat(2, lambda1, flip(lambda2)), 'blue', 'FaceAlpha', 0.2, 'LineStyle', '-.');
+plot(spinTs, spinlambdas, 'red');
 hold off;
 %% Saving data
 % params.lambdas = lambdas;
