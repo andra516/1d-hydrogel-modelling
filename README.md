@@ -3,7 +3,7 @@ Numerical scheme used to solve non-linear pde for porosity in a 1d thermo-respon
 
 There are 3 main files:
 
-> `equilibriumCurve.m`: this produces a plot of (T,$\lambda$) phase-space with the equilibrium
+> `equilibriumCurve.m`: this produces a plot of $(T,\lambda)$ phase-space with the equilibrium
 curve, spinodal and coexistence regions.
 
 > `uniformTempDynamics.m`: this runs the solver for scenario where the temperature is abruptly
