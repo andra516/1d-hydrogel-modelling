@@ -1,7 +1,8 @@
 # 1d-hydrogel-modelling
-Numerical scheme used to solve non-linear pde for porosity in a 1d thermo-responsive hydrogel
 
-There are 3 main files:
+This repository hosts the work made towards my summer research internship at the University of Birmingham studying 1d thermo-responsive hydrogels. Here you can find my final report and a numerical scheme used to solve the non-linear PDE for porosity in a 1d gel.
+
+There are 3 main .m files:
 
 > `equilibriumCurve.m`: this produces a plot of $(T,\lambda)$ phase-space with the equilibrium
 curve, spinodal and coexistence regions.
