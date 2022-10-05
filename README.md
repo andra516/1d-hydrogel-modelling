@@ -1,6 +1,6 @@
 # 1d-hydrogel-modelling
 
-This repository hosts the work made towards my summer research internship at the University of Birmingham studying 1d thermo-responsive hydrogels. Here you can find my final report and a numerical scheme used to solve the non-linear PDE for porosity in a 1d gel.
+This repository hosts the work made towards my summer research internship at the University of Birmingham studying 1d thermo-responsive hydrogels. Here you can find my final report (entitled <i>Shrinking and Swelling Dynamics in 1D Thermo-Responsive Hydrogels</i>) and a numerical scheme used to solve the non-linear PDE for porosity in a 1d gel.
 
 There are 3 main .m files:
 
